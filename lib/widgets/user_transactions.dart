@@ -9,11 +9,12 @@ const uuid = Uuid();
 
 class UserTransactions extends StatelessWidget {
   final List<Transaction> userTransactions;
-  final Function addNewTransaction;
+  final Function addNewTransaction, deleteTransaction;
 
   const UserTransactions(
       {super.key,
       required this.addNewTransaction,
+      required this.deleteTransaction,
       required this.userTransactions});
 
   @override
@@ -21,7 +22,9 @@ class UserTransactions extends StatelessWidget {
     return Column(
       children: [
         // NewTransaction(addNewTransaction: addNewTransaction),
-        TransactionList(userTransactions: userTransactions),
+        TransactionList(
+            userTransactions: userTransactions,
+            deleteTransaction: deleteTransaction),
       ],
     );
   }
