@@ -1,9 +1,15 @@
+import 'dart:io';
+import 'dart:math';
+
 import 'package:expense_tracker/models/transaction.dart';
 import 'package:expense_tracker/widgets/chart.dart';
 import 'package:expense_tracker/widgets/new_transaction.dart';
 import 'package:expense_tracker/widgets/user_transactions.dart';
+import 'package:path_provider/path_provider.dart';
 
 import 'package:flutter/material.dart';
+
+const String filePath = "expenses.txt";
 
 void main() {
   runApp(const MyApp());
@@ -51,6 +57,27 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
+  late Directory directory;
+  late File file;
+
+  @override
+  void initState() {
+    super.initState();
+    getExternalStorageDirectory().then((dir) {
+      setState(() {
+        if (dir == null) {
+          exit(0);
+        } else {
+          directory = dir;
+          file = File("${directory.path}/$filePath");
+          if (!file.existsSync()) {
+            file.create(recursive: true);
+          }
+        }
+      });
+    });
+  }
+
   final List<Transaction> _userTransactions = [
     Transaction(
         id: 't1', title: "Shoes", amount: 643, date: DateTime(2023, 3, 11)),
@@ -65,7 +92,22 @@ class _MyHomePageState extends State<MyHomePage> {
         .toList();
   }
 
-  void _addNewTransaction(String title, double amount, DateTime date) {
+  String generateRandomId() {
+    Random rand = Random();
+    return rand.hashCode.toString();
+  }
+
+  void writeToFile(String title, double amount, DateTime date) async {
+    String id = generateRandomId();
+    await file.writeAsString("$id,\"$title\",$amount,$date\n",
+        mode: FileMode.append);
+  }
+
+  void _addNewTransaction(String title, double amount, DateTime date) async {
+    writeToFile(title, amount, date);
+    // final contents = await file.readAsString();
+    // print(contents);
+
     final Transaction newTx =
         Transaction(id: uuid.v4(), title: title, amount: amount, date: date);
     setState(() {
