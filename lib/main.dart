@@ -60,6 +60,26 @@ class _MyHomePageState extends State<MyHomePage> {
   late Directory directory;
   late File file;
 
+  final List<Transaction> _userTransactions = [];
+
+  void populateTransactions() async {
+    String fileContent = await file.readAsString();
+    List<String> lines = fileContent.split('\n');
+    for (int i = 0; i < lines.length; i++) {
+      List<String> vals = lines[i].split(',');
+      if (vals.length == 4) {
+        setState(() {
+          _userTransactions.add(Transaction(
+            id: vals[0].toString(),
+            title: vals[1].substring(1, vals[1].length - 1),
+            amount: double.parse(vals[2]),
+            date: DateTime.parse(vals[3]),
+          ));
+        });
+      }
+    }
+  }
+
   @override
   void initState() {
     super.initState();
@@ -72,18 +92,13 @@ class _MyHomePageState extends State<MyHomePage> {
           file = File("${directory.path}/$filePath");
           if (!file.existsSync()) {
             file.create(recursive: true);
+          } else {
+            populateTransactions();
           }
         }
       });
     });
   }
-
-  final List<Transaction> _userTransactions = [
-    Transaction(
-        id: 't1', title: "Shoes", amount: 643, date: DateTime(2023, 3, 11)),
-    Transaction(id: 't2', title: "Food", amount: 300, date: DateTime.now()),
-    Transaction(id: 't3', title: "Wallet", amount: 1099, date: DateTime.now()),
-  ];
 
   List<Transaction> get _recentTransactions {
     return _userTransactions
